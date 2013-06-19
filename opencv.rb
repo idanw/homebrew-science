@@ -29,6 +29,8 @@ class Opencv < Formula
   def patches
     # Find openCL headers on case sensitive fs: https://github.com/Homebrew/homebrew-science/pull/200
     'https://github.com/Itseez/opencv/commit/6e119049ce3228ca82acb7f4aaa2f4bceeddcbdf.patch'
+    # Fix bug if ffmpeg is installed
+    DATA
   end
 
   def install
@@ -69,3 +71,20 @@ class Opencv < Formula
     python.standard_caveats if python
   end
 end
+
+__END__
+--- /modules/highgui/CMakeLists.txt
++++ /modules/highgui/CMakeLists.txt
+@@ -172,7 +172,10 @@
+     list(APPEND HIGHGUI_LIBRARIES ${BZIP2_LIBRARIES})
+   endif()
+   if(APPLE)
+-    list(APPEND HIGHGUI_LIBRARIES "-framework VideoDecodeAcceleration" bz2)
++    EXEC_PROGRAM(pkg-config
++        ARGS "--libs --static 'libavcodec'"
++        OUTPUT_VARIABLE LIBAVCODEC_LIBS)
++    list(APPEND HIGHGUI_LIBRARIES "-framework VideoDecodeAcceleration" bz2 ${LIBAVCODEC_LIBS})
+   endif()
+ endif(HAVE_FFMPEG)
+
+
