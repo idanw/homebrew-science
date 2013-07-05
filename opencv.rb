@@ -26,6 +26,9 @@ class Opencv < Formula
   # you don't need unless you're doing video analysis, and some of it isn't
   # in Homebrew anyway. Will depend on openexr if it's installed.
 
+  # Currently OpenCV will only compile properly with FFMPEG if it's using the std env
+  env :std
+
   def patches
     # Find openCL headers on case sensitive fs: https://github.com/Homebrew/homebrew-science/pull/200
     'https://github.com/Itseez/opencv/commit/6e119049ce3228ca82acb7f4aaa2f4bceeddcbdf.patch'
@@ -51,7 +54,9 @@ class Opencv < Formula
     if build.build_32_bit?
       args << "-DCMAKE_OSX_ARCHITECTURES=i386"
       args << "-DOPENCV_EXTRA_C_FLAGS='-arch i386 -m32'"
-      args << "-DOPENCV_EXTRA_CXX_FLAGS='-arch i386 -m32'"
+      args << "-DOPENCV_EXTRA_CXX_FLAGS='-arch i386 -m32 -Wunsequenced'"
+    else
+      args << "-DOPENCV_EXTRA_CXX_FLAGS='-Wunsequenced'"
     end
     args << '-DWITH_QT=ON' if build.with? 'qt'
     args << '-DWITH_TBB=ON' if build.with? 'tbb'
